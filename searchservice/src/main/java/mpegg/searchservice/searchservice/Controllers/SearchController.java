@@ -94,10 +94,10 @@ public class SearchController {
                                                                @RequestParam(value = "type", required = false) String type)
     {
         JSONArray response = new JSONArray();
-        center = (center == null) ? null : "%"+center+"%";
-        description = (description == null) ? null : "%"+description+"%";
-        title = (title == null) ? null :"%"+title+"%";
-        type = (type == null) ? null :"%"+type+"%";
+        center = (center == null || center.equals("")) ? null : "%"+center+"%";
+        description = (description == null || description.equals("")) ? null : "%"+description+"%";
+        title = (title == null || title.equals("")) ? null :"%"+title+"%";
+        type = (type == null || type.equals("")) ? null :"%"+type+"%";
         List<DatasetGroup> list = datasetGroupRepository.findByMetadata(center,description,title,type);
         for (DatasetGroup dg : list) {
             if (authorizationUtil.authorized(urlGCS, "dg", String.valueOf(dg.getId()), jwt, "GetIdDatasetGroup", datasetGroupRepository, datasetRepository, mpegFileRepository)) {
@@ -112,8 +112,8 @@ public class SearchController {
                                                           @RequestParam(value = "title", required = false) String title,
                                                           @RequestParam(value = "taxon_id", required = false) String taxon_id)
     {
-        title = (title == null) ? null :"%"+title+"%";
-        taxon_id = (taxon_id == null) ? null : "%"+taxon_id+"%";
+        title = (title == null || title.equals("")) ? null :"%"+title+"%";
+        taxon_id = (taxon_id == null || taxon_id.equals("")) ? null : "%"+taxon_id+"%";
         JSONArray response = new JSONArray();
         List<Long> datasetList = sampleRepository.findByMetadata(title,taxon_id);
         for (Long id : datasetList) {
