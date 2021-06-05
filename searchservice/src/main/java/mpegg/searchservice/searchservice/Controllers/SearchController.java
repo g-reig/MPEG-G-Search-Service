@@ -12,6 +12,7 @@ import mpegg.searchservice.searchservice.Utils.JWTUtil;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +25,8 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class SearchController {
 
-    private final String urlGCS = "http://localhost:8082";
+    @Value("${gcs.url}")
+    private final String urlGCS = null;
 
     private JWTUtil jwtUtil = new JWTUtil();
     @Autowired
@@ -100,8 +102,11 @@ public class SearchController {
         type = (type == null || type.equals("")) ? null :"%"+type+"%";
         List<DatasetGroup> list = datasetGroupRepository.findByMetadata(center,description,title,type);
         for (DatasetGroup dg : list) {
+            JSONObject jo = new JSONObject();
             if (authorizationUtil.authorized(urlGCS, "dg", String.valueOf(dg.getId()), jwt, "GetIdDatasetGroup", datasetGroupRepository, datasetRepository, mpegFileRepository)) {
-                response.add(dg.getId());
+                jo.put("id",dg.getId());
+                jo.put("dg_id",dg.getDg_id());
+                response.add(jo);
             }
         }
         return new ResponseEntity<JSONArray>(response,HttpStatus.OK);
@@ -116,9 +121,11 @@ public class SearchController {
         taxon_id = (taxon_id == null || taxon_id.equals("")) ? null : "%"+taxon_id+"%";
         JSONArray response = new JSONArray();
         List<Long> datasetList = sampleRepository.findByMetadata(title,taxon_id);
-        for (Long id : datasetList) {
-            if (authorizationUtil.authorized(urlGCS, "dt", String.valueOf(id), jwt, "GetIdDataset", datasetGroupRepository, datasetRepository, mpegFileRepository)) {
-                response.add(id);
+        for (Long dt : datasetList) {
+            JSONObject jo = new JSONObject();
+            if (authorizationUtil.authorized(urlGCS, "dt", String.valueOf(dt), jwt, "GetIdDataset", datasetGroupRepository, datasetRepository, mpegFileRepository)) {
+                jo.put("id",dt);
+                response.add(jo);
             }
         }
         return new ResponseEntity<JSONArray>(response,HttpStatus.OK);
